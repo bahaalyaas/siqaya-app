@@ -1,0 +1,52 @@
+datasource db {
+provider = "sqlite"
+url      = "file:./dev.db"
+}
+
+generator client {
+provider = "prisma-client-js"
+}
+
+model Region {
+id      String   @id @default(cuid())
+name    String
+code    String   @unique
+
+mosques Mosque[]
+orders  Order[]
+}
+
+model Mosque {
+id       String @id @default(cuid())
+name     String
+code     String @unique
+
+regionId String
+region   Region @relation(fields: [regionId], references: [id])
+
+orders   Order[]
+}
+
+model Order {
+id        String   @id @default(cuid())
+code      String   @unique
+name      String
+phone     String
+
+regionId  String
+mosqueId  String
+
+region    Region @relation(fields: [regionId], references: [id])
+mosque    Mosque @relation(fields: [mosqueId], references: [id])
+status String @default("NEW")
+
+quantity  Int
+createdAt DateTime @default(now())
+}
+
+model Settings {
+id             String @id @default(cuid())
+sellPrice      Int    @default(2000)
+buyPrice       Int    @default(1500)
+charityPercent Int    @default(10)
+}
