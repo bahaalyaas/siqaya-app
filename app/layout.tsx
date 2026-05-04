@@ -11,7 +11,8 @@ export const metadata = {
   description: "مشروع سقيا المساجد",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+
   return (
     <html lang="ar" dir="rtl">
       <body className={cairo.className + " bg-white"}>
