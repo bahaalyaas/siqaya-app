@@ -47,7 +47,7 @@ const d = new Date(date);
 return d.getFullYear() === now.getFullYear();
 };
 
-const calcBoxes = (list) =>
+const calcBoxes = (list: any[]) =>
 list.reduce((sum, item) => sum + Number(item.quantity), 0);
 
 const calcFinance = (boxes) => {
