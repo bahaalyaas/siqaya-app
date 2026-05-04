@@ -38,7 +38,8 @@ loadOrders();
 
 };
 
-const getStatusText = (status) => {
+const getStatusText = (status: string) => {
+
 if (status === "NEW") return "🟡 جديد";
 if (status === "CONTACTED") return "🔵 تم التواصل";
 if (status === "PAID") return "🟣 تم الدفع";
