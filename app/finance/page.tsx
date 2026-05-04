@@ -31,10 +31,10 @@ const paidOrders = orders.filter(
 
 const now = new Date();
 
-const isToday = (date) =>
+const isToday = (date: any) =>
 new Date(date).toDateString() === now.toDateString();
 
-const isThisMonth = (date) => {
+const isThisMonth = (date: any) => {
 const d = new Date(date);
 return (
 d.getMonth() === now.getMonth() &&
