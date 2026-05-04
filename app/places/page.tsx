@@ -1,240 +1,159 @@
-import { PrismaClient } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+"use client";
 
-export const metadata = {
-title: "سقاية - إدارة المناطق والمساجد",
+import { useEffect, useState } from "react";
+
+export default function PlacesPage() {
+const [regions, setRegions] = useState<any[]>([]);
+const [mosques, setMosques] = useState<any[]>([]);
+const [regionName, setRegionName] = useState("");
+const [mosqueName, setMosqueName] = useState("");
+const [regionId, setRegionId] = useState("");
+
+const load = async () => {
+const res = await fetch("/api/regions");
+const data = await res.json();
+setRegions(data);
+
+
+const res2 = await fetch("/api/mosques");
+const data2 = await res2.json();
+setMosques(data2);
+
+
 };
 
-const prisma = new PrismaClient();
+useEffect(() => {
+load();
+}, []);
 
-async function addRegion(formData) {
-"use server";
+const addRegion = async (e: any) => {
+e.preventDefault();
 
-const name = formData.get("name")?.toString().trim();
-const code = formData.get("code")?.toString().trim();
 
-if (!name || !code) return;
-
-const exists = await prisma.region.findUnique({
-where: { code },
+await fetch("/api/regions", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ name: regionName }),
 });
 
-if (!exists) {
-await prisma.region.create({
-data: { name, code },
-});
-}
-
-revalidatePath("/places");
-}
-
-async function addMosques(formData) {
-"use server";
-
-const regionId = formData.get("regionId")?.toString();
-const names = formData.get("names")?.toString();
-
-if (!regionId || !names) return;
-
-const lines = names
-.split("\n")
-.map((x) => x.trim())
-.filter((x) => x !== "");
-
-for (const line of lines) {
-const parts = line.split("|");
+setRegionName("");
+load();
 
 
-const name = parts[0]?.trim();
-let code = parts[1]?.trim();
+};
 
-if (!name) continue;
+const addMosque = async (e: any) => {
+e.preventDefault();
 
-if (!code || code === "") {
-  code =
-    name
-      .replace(/\s+/g, "-")
-      .replace(/[^\u0600-\u06FFa-zA-Z0-9-]/g, "")
-      .toLowerCase() +
-    "-" +
-    Math.floor(Math.random() * 9999);
-}
-
-const exists = await prisma.mosque.findUnique({
-  where: { code },
+```
+await fetch("/api/mosques", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    name: mosqueName,
+    regionId,
+  }),
 });
 
-if (!exists) {
-  await prisma.mosque.create({
-    data: {
-      name,
-      code,
-      regionId,
-    },
-  });
-}
+setMosqueName("");
+load();
 
 
-}
+};
 
-revalidatePath("/places");
-}
-
-export default async function PlacesPage() {
-const regions = await prisma.region.findMany({
-orderBy: {
-name: "asc",
-},
-});
-
-const mosques = await prisma.mosque.findMany({
-include: {
-region: true,
-},
-orderBy: {
-id: "desc",
-},
-take: 50,
-});
-
-return ( <main className="min-h-screen bg-gray-100 p-4 text-black">
+return ( <main className="min-h-screen bg-gray-100 p-6 text-black">
 
 
-  <div className="max-w-5xl mx-auto space-y-6">
+  <div className="max-w-4xl mx-auto space-y-8">
 
-    <h1 className="text-2xl font-bold">
-      إدارة المناطق والمساجد
+    <h1 className="text-3xl font-bold">
+      المناطق والمساجد
     </h1>
 
     <div className="grid md:grid-cols-2 gap-6">
 
-      <div className="bg-white rounded-3xl shadow p-6">
+      <form onSubmit={addRegion} className="bg-white p-6 rounded-3xl shadow space-y-4">
 
-        <h2 className="text-lg font-bold mb-4">
-          إضافة منطقة جديدة
+        <h2 className="font-bold text-lg">
+          إضافة منطقة
         </h2>
 
-        <form action={addRegion} className="space-y-4">
+        <input
+          value={regionName}
+          onChange={(e) => setRegionName(e.target.value)}
+          placeholder="اسم المنطقة"
+          className="w-full border p-3 rounded-2xl"
+          required
+        />
 
-          <input
-            name="name"
-            placeholder="اسم المنطقة"
-            className="w-full border rounded-2xl p-3"
-          />
+        <button className="bg-blue-700 text-white w-full py-3 rounded-2xl font-bold">
+          إضافة
+        </button>
 
-          <input
-            name="code"
-            placeholder="كود مختصر مثال mansour"
-            className="w-full border rounded-2xl p-3"
-          />
+      </form>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white rounded-2xl p-3 font-bold"
-          >
-            حفظ المنطقة
-          </button>
+      <form onSubmit={addMosque} className="bg-white p-6 rounded-3xl shadow space-y-4">
 
-        </form>
-
-      </div>
-
-      <div className="bg-white rounded-3xl shadow p-6">
-
-        <h2 className="text-lg font-bold mb-4">
-          إضافة مساجد دفعة واحدة
+        <h2 className="font-bold text-lg">
+          إضافة مسجد
         </h2>
 
-        <form action={addMosques} className="space-y-4">
+        <select
+          value={regionId}
+          onChange={(e) => setRegionId(e.target.value)}
+          className="w-full border p-3 rounded-2xl"
+          required
+        >
+          <option value="">اختر المنطقة</option>
 
-          <select
-            name="regionId"
-            className="w-full border rounded-2xl p-3 bg-white"
-          >
-            <option value="">
-              اختر المنطقة
+          {regions.map((r: any) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
             </option>
+          ))}
+        </select>
 
-            {regions.map((region) => (
-              <option
-                key={region.id}
-                value={region.id}
-              >
-                {region.name}
-              </option>
-            ))}
-          </select>
+        <input
+          value={mosqueName}
+          onChange={(e) => setMosqueName(e.target.value)}
+          placeholder="اسم المسجد"
+          className="w-full border p-3 rounded-2xl"
+          required
+        />
 
-          <textarea
-            name="names"
-            rows={10}
-            placeholder={`جامع النور | noor
+        <button className="bg-green-600 text-white w-full py-3 rounded-2xl font-bold">
+          إضافة
+        </button>
 
-
-جامع الرحمن | rahman
-جامع التقوى | taqwa`}
-className="w-full border rounded-2xl p-3"
-/>
-
-
-          <div className="text-xs text-gray-600 leading-6">
-            كل سطر بهذا الشكل:
-            اسم المسجد | الكود
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white rounded-2xl p-3 font-bold"
-          >
-            إضافة الجميع
-          </button>
-
-        </form>
-
-      </div>
+      </form>
 
     </div>
 
-    <div className="bg-white rounded-3xl shadow p-6">
+    <div className="bg-white p-6 rounded-3xl shadow">
 
-      <h2 className="text-lg font-bold mb-4">
-        آخر المساجد المضافة
+      <h2 className="font-bold mb-4">
+        قائمة المساجد
       </h2>
 
-      <div className="overflow-x-auto">
+      <div className="space-y-3">
 
-        <table className="w-full text-sm text-right">
+        {mosques.map((m: any) => (
+          <div key={m.id} className="border p-3 rounded-xl">
 
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2">المسجد</th>
-              <th className="p-2">الكود</th>
-              <th className="p-2">المنطقة</th>
-            </tr>
-          </thead>
+            <div className="font-bold">
+              {m.name}
+            </div>
 
-          <tbody>
-            {mosques.map((mosque) => (
-              <tr
-                key={mosque.id}
-                className="border-b"
-              >
-                <td className="p-2">
-                  {mosque.name}
-                </td>
+            <div className="text-sm text-gray-500">
+              {m.region?.name}
+            </div>
 
-                <td className="p-2">
-                  {mosque.code}
-                </td>
-
-                <td className="p-2">
-                  {mosque.region?.name}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-
-        </table>
+          </div>
+        ))}
 
       </div>
 
