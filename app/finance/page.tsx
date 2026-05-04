@@ -42,7 +42,7 @@ d.getFullYear() === now.getFullYear()
 );
 };
 
-const isThisYear = (date) => {
+const isThisYear = (date :any) => {
 const d = new Date(date);
 return d.getFullYear() === now.getFullYear();
 };
