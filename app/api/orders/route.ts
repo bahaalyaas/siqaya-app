@@ -25,7 +25,16 @@ if (
 }
 
 const order = await prisma.order.create({
-  data: {
+data: {
+name: data.name,
+phone: data.phone,
+regionId: Number(data.regionId),
+mosqueId: Number(data.mosqueId),
+quantity: Number(data.quantity),
+code: "ORD-" + Date.now(), // 👈 مهم
+} as any,
+});
+
     name: data.name,
     phone: data.phone,
     regionId: data.regionId,
