@@ -1,24 +1,25 @@
 export const dynamic = "force-dynamic";
 
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
 try {
 const { id, status } = await req.json();
 
 
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
 await prisma.order.update({
   where: { id },
   data: { status },
 });
 
-return Response.json({ success: true });
+return NextResponse.json({ success: true });
 
 
 } catch (error) {
 console.error(error);
-return Response.json({ success: false });
+return NextResponse.json({ success: false });
 }
 }

@@ -1,25 +1,26 @@
 export const dynamic = "force-dynamic";
 
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { NextResponse } from "next/server";
 
 export async function GET() {
-// 👇 أثناء البناء لا نشغل Prisma نهائيًا
 if (process.env.VERCEL_ENV === "production") {
 return NextResponse.json([]);
 }
-  try {
+
+try {
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+
 const regions = await prisma.region.findMany({
-orderBy: { name: "asc" },
+  orderBy: { name: "asc" },
 });
 
-
-return Response.json(regions);
+return NextResponse.json(regions);
 
 
 } catch (error) {
 console.error(error);
-return Response.json([]);
+return NextResponse.json([]);
 }
 }
