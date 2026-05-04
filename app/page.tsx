@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function HomePage() {
-const [regions, setRegions] = useState([]);
-const [mosques, setMosques] = useState([]);
+const [regions, setRegions] = useState<any[]>([]);
+const [mosques, setMosques] = useState<any[]>([]);
 
 const [name, setName] = useState("");
 const [phone, setPhone] = useState("");
 const [regionId, setRegionId] = useState("");
 const [mosqueId, setMosqueId] = useState("");
 const [quantity, setQuantity] = useState(1);
+const [loading, setLoading] = useState(false);
 
 useEffect(() => {
-document.title = "سقاية - طلب جديد";
 loadRegions();
 }, []);
 
@@ -24,39 +24,46 @@ const data = await res.json();
 setRegions(data);
 };
 
-const loadMosques = async (id) => {
+const loadMosques = async (id: any) => {
 const res = await fetch(`/api/mosques?regionId=${id}`);
 const data = await res.json();
 setMosques(data);
 };
 
-const submitOrder = async (e) => {
+const submitOrder = async (e: any) => {
 e.preventDefault();
 
 
-const res = await fetch("/api/orders", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    name,
-    phone,
-    regionId,
-    mosqueId,
-    quantity,
-  }),
-});
+try {
+  setLoading(true);
 
-const data = await res.json();
+  const res = await fetch("/api/orders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      phone,
+      regionId,
+      mosqueId,
+      quantity,
+    }),
+  });
 
-if (data.success) {
-window.location.href =
-"/success?order=" +
-encodeURIComponent(data.code || data.orderId);
+  const data = await res.json();
 
-} else {
-  alert("حدث خطأ أثناء إرسال الطلب");
+  if (data.success) {
+    window.location.href =
+      "/success?order=" +
+      encodeURIComponent(data.code || data.orderId);
+  } else {
+    alert("حدث خطأ أثناء إرسال الطلب");
+  }
+} catch (error) {
+  alert("تعذر الاتصال بالخادم");
+} finally {
+  setLoading(false);
 }
 
 
@@ -72,20 +79,19 @@ return ( <main className="min-h-screen bg-gradient-to-b from-white via-sky-50 to
     <div className="text-center mb-8">
 
       <div className="flex justify-center mb-8">
-  <Image
-    src="/logo.png"
-    alt="logo"
-    width={420}
-    height={420}
-    priority
-    className="drop-shadow-[0_22px_40px_rgba(0,0,0,0.28)]"
-  />
-</div>
-
+        <Image
+          src="/logo.png"
+          alt="logo"
+          width={420}
+          height={420}
+          priority
+          className="drop-shadow-[0_22px_40px_rgba(0,0,0,0.28)]"
+        />
+      </div>
 
       <div className="bg-gradient-to-r from-blue-700 to-cyan-600 text-white rounded-3xl shadow-xl p-6 mb-4">
         <p className="text-lg font-bold leading-9">
-          ساهم في سقيا بيوت الله،
+          ساهم بثقة في سقيا بيوت الله،
           واجعل لك أجرًا لا ينقطع
           مع كل قطرة ماء تصل إلى مسجد
         </p>
@@ -147,7 +153,7 @@ return ( <main className="min-h-screen bg-gradient-to-b from-white via-sky-50 to
           >
             <option value="">اختر المنطقة</option>
 
-            {regions.map((region) => (
+            {regions.map((region: any) => (
               <option key={region.id} value={region.id}>
                 {region.name}
               </option>
@@ -168,7 +174,7 @@ return ( <main className="min-h-screen bg-gradient-to-b from-white via-sky-50 to
           >
             <option value="">اختر المسجد</option>
 
-            {mosques.map((mosque) => (
+            {mosques.map((mosque: any) => (
               <option key={mosque.id} value={mosque.id}>
                 {mosque.name}
               </option>
@@ -237,9 +243,10 @@ return ( <main className="min-h-screen bg-gradient-to-b from-white via-sky-50 to
 
         <button
           type="submit"
+          disabled={loading}
           className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-3xl p-5 font-bold text-lg shadow-xl"
         >
-          إرسال الطلب الآن
+          {loading ? "جاري الإرسال..." : "إرسال الطلب الآن"}
         </button>
 
       </form>
