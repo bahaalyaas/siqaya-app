@@ -80,9 +80,10 @@ const q = search.toLowerCase();
 
 const statsAll = {
 total: orders.length,
-qty: orders.reduce((a, b) => a + Number(b.quantity), 0),
-done: orders.filter((o) => o.status === "DONE").length,
-cancelled: orders.filter((o) => o.status === "CANCELLED").length,
+qty: (orders as any[]).reduce((a, b) => a + Number(b.quantity), 0),
+
+done: orders.filter((o: any) => o.status === "DONE").length,
+cancelled: orders.filter((o: any) => o.status === "CANCELLED").length,
 };
 
 const statsCurrent = {
