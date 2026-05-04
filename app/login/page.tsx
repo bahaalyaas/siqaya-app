@@ -5,7 +5,8 @@ import { useState } from "react";
 export default function LoginPage() {
 const [password, setPassword] = useState("");
 
-const submit = async (e) => {
+const submit = async (e: any) => {
+
 e.preventDefault();
 
 
