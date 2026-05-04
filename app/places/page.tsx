@@ -47,7 +47,7 @@ load();
 const addMosque = async (e: any) => {
 e.preventDefault();
 
-```
+
 await fetch("/api/mosques", {
   method: "POST",
   headers: {
