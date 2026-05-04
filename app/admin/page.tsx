@@ -1,29 +1,22 @@
-
-
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 
 export default function AdminPage() {
-const [orders, setOrders] = useState([]);
-const [search, setSearch] = useState("");
-const [statusFilter, setStatusFilter] = useState("ALL");
-const [regionFilter, setRegionFilter] = useState("ALL");
+const [orders, setOrders] = useState<any[]>([]);
+const [q, setQ] = useState("");
 
-const loadOrders = async () => {
+const load = async () => {
 const res = await fetch("/api/orders/list");
 const data = await res.json();
 setOrders(data);
 };
 
 useEffect(() => {
-document.title = "سقاية - الإدارة";
-loadOrders();
+load();
 }, []);
 
-
 const updateStatus = async (id: number, status: string) => {
-
 await fetch("/api/orders/status", {
 method: "POST",
 headers: {
@@ -33,13 +26,12 @@ body: JSON.stringify({ id, status }),
 });
 
 
-loadOrders();
+load();
 
 
 };
 
 const getStatusText = (status: string) => {
-
 if (status === "NEW") return "🟡 جديد";
 if (status === "CONTACTED") return "🔵 تم التواصل";
 if (status === "PAID") return "🟣 تم الدفع";
@@ -48,265 +40,123 @@ if (status === "CANCELLED") return "🔴 ملغي";
 return status;
 };
 
-const regions = useMemo(() => {
-const list = (orders as any[]).map((o) => o.region?.name).filter(Boolean);
-return [...new Set(list)];
-}, [orders]);
-
-const filteredOrders = useMemo(() => {
+const filteredOrders: any[] = useMemo(() => {
 return orders.filter((order: any) => {
+const query = q.toLowerCase();
 
-const q = search.toLowerCase();
 
-
-  const matchesSearch =
-    order.code?.toLowerCase().includes(q) ||
-    order.name?.toLowerCase().includes(q) ||
-    order.phone?.toLowerCase().includes(q) ||
-    order.region?.name?.toLowerCase().includes(q) ||
-    order.mosque?.name?.toLowerCase().includes(q);
-
-  const matchesStatus =
-    statusFilter === "ALL" || order.status === statusFilter;
-
-  const matchesRegion =
-    regionFilter === "ALL" || order.region?.name === regionFilter;
-
-  return matchesSearch && matchesStatus && matchesRegion;
+  return (
+    order.code?.toLowerCase().includes(query) ||
+    order.name?.toLowerCase().includes(query) ||
+    order.phone?.toLowerCase().includes(query) ||
+    order.region?.name?.toLowerCase().includes(query) ||
+    order.mosque?.name?.toLowerCase().includes(query)
+  );
 });
 
 
-}, [orders, search, statusFilter, regionFilter]);
+}, [orders, q]);
+
+const regions = useMemo(() => {
+const list = (orders as any[])
+.map((o) => o.region?.name)
+.filter(Boolean);
+
+
+return [...new Set(list)];
+
+
+}, [orders]);
 
 const statsAll = {
 total: orders.length,
-qty: (orders as any[]).reduce((a, b) => a + Number(b.quantity), 0),
-
+qty: (orders as any[]).reduce(
+(a, b) => a + Number(b.quantity),
+0
+),
 done: orders.filter((o: any) => o.status === "DONE").length,
 cancelled: orders.filter((o: any) => o.status === "CANCELLED").length,
 };
 
 const statsCurrent = {
 total: filteredOrders.length,
-newCount: filteredOrders.filter((o) => o.status === "NEW").length,
-paid: filteredOrders.filter((o) => o.status === "PAID").length,
+newCount: filteredOrders.filter((o: any) => o.status === "NEW").length,
+paid: filteredOrders.filter((o: any) => o.status === "PAID").length,
 };
 
-const waLink = (order) => {
-const phone = order.phone.replace(/^0/, "964");
+return ( <main className="p-6 text-black">
 
 
-const msg = `السلام عليكم،
+  <h1 className="text-2xl font-bold mb-4">
+    إدارة الطلبات
+  </h1>
 
+  <input
+    placeholder="بحث..."
+    value={q}
+    onChange={(e) => setQ(e.target.value)}
+    className="border p-3 rounded mb-4 w-full"
+  />
 
-تم استلام طلبكم في مشروع سقاية بنجاح.
+  <div className="grid grid-cols-2 gap-4 mb-6">
 
-رقم الطلب: ${order.code}
-المنطقة: ${order.region?.name}
-المسجد: ${order.mosque?.name}
-الكمية: ${order.quantity}
-
-وسيتم التواصل معكم قريباً.
-
-جزاكم الله خيراً 🌿`;
-
-
-return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-
-
-};
-
-return ( <main className="min-h-screen bg-gray-100 p-3 text-black">
-
-
-  <div className="max-w-7xl mx-auto">
-
-    <h1 className="text-xl font-bold mb-3 text-gray-800">
-      لوحة إدارة الطلبات
-    </h1>
-
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-xs">
-
-      <div className="bg-white p-3 rounded-xl shadow text-black">
-        📦 إجمالي الطلبات: {statsAll.total}
-      </div>
-
-      <div className="bg-white p-3 rounded-xl shadow text-black">
-        📚 الكمية الكلية: {statsAll.qty}
-      </div>
-
-      <div className="bg-white p-3 rounded-xl shadow text-black">
-        🟢 مكتمل: {statsAll.done}
-      </div>
-
-      <div className="bg-white p-3 rounded-xl shadow text-black">
-        🔴 ملغي: {statsAll.cancelled}
-      </div>
-
+    <div className="bg-white p-4 rounded shadow">
+      إجمالي: {statsAll.total}
     </div>
 
-    <div className="grid grid-cols-3 gap-2 mb-3 text-xs">
-
-      <div className="bg-yellow-100 p-3 rounded-xl text-black">
-        النتائج الحالية: {statsCurrent.total}
-      </div>
-
-      <div className="bg-blue-100 p-3 rounded-xl text-black">
-        الجديد الحالي: {statsCurrent.newCount}
-      </div>
-
-      <div className="bg-purple-100 p-3 rounded-xl text-black">
-        الدفع الحالي: {statsCurrent.paid}
-      </div>
-
+    <div className="bg-white p-4 rounded shadow">
+      الكمية: {statsAll.qty}
     </div>
 
-    <div className="grid md:grid-cols-3 gap-2 mb-3">
+    <div className="bg-white p-4 rounded shadow">
+      مكتمل: {statsAll.done}
+    </div>
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="بحث: اسم / هاتف / طلب / مسجد"
-        className="p-2 rounded-xl border text-sm text-black bg-white"
-      />
+    <div className="bg-white p-4 rounded shadow">
+      ملغي: {statsAll.cancelled}
+    </div>
 
-      <select
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value)}
-        className="p-2 rounded-xl border text-sm text-black bg-white"
+  </div>
+
+  <div className="space-y-4">
+
+    {filteredOrders.map((order: any) => (
+      <div
+        key={order.id}
+        className="bg-white p-4 rounded shadow"
       >
-        <option value="ALL">الكل</option>
-        <option value="NEW">جديد</option>
-        <option value="CONTACTED">تم التواصل</option>
-        <option value="PAID">تم الدفع</option>
-        <option value="DONE">مكتمل</option>
-        <option value="CANCELLED">ملغي</option>
-      </select>
+        <div className="font-bold">
+          {order.code}
+        </div>
 
-      <select
-        value={regionFilter}
-        onChange={(e) => setRegionFilter(e.target.value)}
-        className="p-2 rounded-xl border text-sm text-black bg-white"
-      >
-        <option value="ALL">كل المناطق</option>
-        {regions.map((r) => (
-          <option key={r} value={r}>
-            {r}
-          </option>
-        ))}
-      </select>
+        <div>{order.name}</div>
+        <div>{order.phone}</div>
+        <div>{order.region?.name}</div>
+        <div>{order.mosque?.name}</div>
+        <div>الكمية: {order.quantity}</div>
 
-    </div>
+        <div className="mt-2">
+          {getStatusText(order.status)}
+        </div>
 
-    <div className="overflow-x-auto bg-white rounded-2xl shadow">
+        <div className="flex gap-2 mt-3">
 
-      <table className="w-full text-xs text-right text-black">
+          <button onClick={() => updateStatus(order.id, "PAID")}>
+            دفع
+          </button>
 
-        <thead className="bg-blue-600 text-white">
-          <tr>
-            <th className="p-2">الطلب</th>
-            <th className="p-2">الاسم</th>
-            <th className="p-2">الهاتف</th>
-            <th className="p-2">واتساب</th>
-            <th className="p-2">المنطقة</th>
-            <th className="p-2">المسجد</th>
-            <th className="p-2">كمية</th>
-            <th className="p-2">الحالة</th>
-            <th className="p-2">إجراءات</th>
-            <th className="p-2">التاريخ</th>
-          </tr>
-        </thead>
+          <button onClick={() => updateStatus(order.id, "DONE")}>
+            تم
+          </button>
 
-        <tbody>
-          {filteredOrders.map((order) => (
-            <tr
-              key={order.id}
-              className="border-b text-black hover:bg-gray-50"
-            >
+          <button onClick={() => updateStatus(order.id, "CANCELLED")}>
+            إلغاء
+          </button>
 
-              <td className="p-2 font-bold text-blue-700">
-                {order.code}
-              </td>
+        </div>
 
-              <td className="p-2">{order.name}</td>
-
-              <td className="p-2">{order.phone}</td>
-
-              <td className="p-2">
-                <a
-                  href={waLink(order)}
-                  target="_blank"
-                  className="bg-green-600 text-white px-2 py-1 rounded text-[11px]"
-                >
-                  واتساب
-                </a>
-              </td>
-
-              <td className="p-2">{order.region?.name}</td>
-
-              <td className="p-2">{order.mosque?.name}</td>
-
-              <td className="p-2 text-center">{order.quantity}</td>
-
-              <td className="p-2 whitespace-nowrap font-bold">
-                {getStatusText(order.status)}
-              </td>
-
-              <td className="p-2 space-x-1 whitespace-nowrap">
-
-                <button
-                  onClick={() => updateStatus(order.id, "NEW")}
-                  className="bg-yellow-500 text-white px-2 py-0.5 rounded text-[11px]"
-                >
-                  جديد
-                </button>
-
-                <button
-                  onClick={() => updateStatus(order.id, "CONTACTED")}
-                  className="bg-blue-600 text-white px-2 py-0.5 rounded text-[11px]"
-                >
-                  تواصل
-                </button>
-
-                <button
-                  onClick={() => updateStatus(order.id, "PAID")}
-                  className="bg-purple-600 text-white px-2 py-0.5 rounded text-[11px]"
-                >
-                  دفع
-                </button>
-
-                <button
-                  onClick={() => updateStatus(order.id, "DONE")}
-                  className="bg-green-600 text-white px-2 py-0.5 rounded text-[11px]"
-                >
-                  مكتمل
-                </button>
-
-                <button
-                  onClick={() => updateStatus(order.id, "CANCELLED")}
-                  className="bg-red-600 text-white px-2 py-0.5 rounded text-[11px]"
-                >
-                  ملغي
-                </button>
-
-              </td>
-
-              <td className="p-2 whitespace-nowrap text-gray-700">
-                {new Date(order.createdAt).toLocaleDateString("en-GB")}{" "}
-                {new Date(order.createdAt).toLocaleTimeString("en-GB", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                })}
-              </td>
-
-            </tr>
-          ))}
-        </tbody>
-
-      </table>
-
-    </div>
+      </div>
+    ))}
 
   </div>
 
@@ -315,4 +165,3 @@ return ( <main className="min-h-screen bg-gray-100 p-3 text-black">
 
 );
 }
-console.log("TEST CHANGE");
