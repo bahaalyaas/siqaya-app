@@ -5,9 +5,17 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function GET() {
-  const regions = await prisma.region.findMany();
+try {
+const regions = await prisma.region.findMany({
+orderBy: { name: "asc" },
+});
 
-  return new Response(JSON.stringify(regions), {
-    headers: { "Content-Type": "application/json" },
-  });
+
+return Response.json(regions);
+
+
+} catch (error) {
+console.error(error);
+return Response.json([]);
+}
 }

@@ -128,17 +128,17 @@ return new Response(
 console.error("SERVER ERROR:", error);
 
 
+catch (error) {
+console.error("SERVER ERROR:", error);
+
 return new Response(
-  JSON.stringify({
-    success: false,
-    message: "حدث خطأ في الخادم",
-  }),
-  {
-    status: 500,
-    headers: { "Content-Type": "application/json" },
-  }
-);
-
-
+JSON.stringify({
+success: false,
+message: "خطأ في السيرفر",
+}),
+{
+status: 500,
+headers: { "Content-Type": "application/json" },
 }
+);
 }

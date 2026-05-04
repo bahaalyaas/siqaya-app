@@ -6,34 +6,19 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
 try {
-const data = await req.json();
+const { id, status } = await req.json();
 
 
 await prisma.order.update({
-  where: {
-    id: data.id,
-  },
-  data: {
-    status: data.status,
-  },
+  where: { id },
+  data: { status },
 });
 
-return new Response(
-  JSON.stringify({ success: true }),
-  {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  }
-);
+return Response.json({ success: true });
 
 
 } catch (error) {
-return new Response(
-JSON.stringify({ success: false }),
-{
-status: 500,
-headers: { "Content-Type": "application/json" },
-}
-);
+console.error(error);
+return Response.json({ success: false });
 }
 }
