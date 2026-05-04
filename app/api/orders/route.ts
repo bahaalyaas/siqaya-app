@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import nodemailer from "nodemailer";
+const nodemailer = require("nodemailer");
+
 
 const prisma = new PrismaClient();
 
