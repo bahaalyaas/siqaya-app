@@ -49,7 +49,7 @@ return status;
 };
 
 const regions = useMemo(() => {
-const list = orders.map((o) => o.region?.name).filter(Boolean);
+const list = (orders as any[]).map((o) => o.region?.name).filter(Boolean);
 return [...new Set(list)];
 }, [orders]);
 
