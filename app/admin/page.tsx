@@ -54,7 +54,8 @@ return [...new Set(list)];
 }, [orders]);
 
 const filteredOrders = useMemo(() => {
-return orders.filter((order) => {
+return orders.filter((order: any) => {
+
 const q = search.toLowerCase();
 
 
