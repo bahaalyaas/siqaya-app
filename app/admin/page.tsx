@@ -22,7 +22,8 @@ loadOrders();
 }, []);
 
 
-const updateStatus = async (id, status) => {
+const updateStatus = async (id: number, status: string) => {
+
 await fetch("/api/orders/status", {
 method: "POST",
 headers: {
