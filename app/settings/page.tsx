@@ -5,11 +5,10 @@ export const metadata = {
 title: "سقاية - إعدادات الأسعار",
 };
 
-
 const prisma = new PrismaClient();
 
 export default async function SettingsPage() {
-let settings = await prisma.settings.findFirst();
+let settings: any = await prisma.settings.findFirst();
 
 if (!settings) {
 settings = await prisma.settings.create({
@@ -21,7 +20,7 @@ charityPercent: 10,
 });
 }
 
-async function saveSettings(formData) {
+async function saveSettings(formData: any) {
 "use server";
 
 
@@ -107,6 +106,7 @@ return ( <main className="min-h-screen bg-gray-100 p-6 text-black">
   </div>
 
 </main>
+
 
 );
 }
