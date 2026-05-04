@@ -1,28 +1,27 @@
 export const dynamic = "force-dynamic";
 
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { NextResponse } from "next/server";
 
 export async function GET() {
+// 👇 أثناء البناء لا نشغل Prisma نهائيًا
+if (process.env.VERCEL_ENV === "production") {
+return NextResponse.json([]);
+}
+
 try {
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+
 const mosques = await prisma.mosque.findMany({
-include: {
-region: true,
-},
+  include: { region: true },
 });
 
-
-return Response.json(mosques);
+return NextResponse.json(mosques);
 
 
 } catch (error) {
-console.error("MOSQUES ERROR:", error);
-
-
-// 🔥 هذا أهم شيء يمنع فشل build
-return Response.json([]);
-
-
+console.error(error);
+return NextResponse.json([]);
 }
 }

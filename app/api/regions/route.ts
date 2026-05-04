@@ -5,7 +5,11 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function GET() {
-try {
+// 👇 أثناء البناء لا نشغل Prisma نهائيًا
+if (process.env.VERCEL_ENV === "production") {
+return NextResponse.json([]);
+}
+  try {
 const regions = await prisma.region.findMany({
 orderBy: { name: "asc" },
 });
